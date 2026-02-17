@@ -21,7 +21,7 @@ app.add_middleware(
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg://postgres:postgres@localhost:5432/todo_app",
+    "postgresql+psycopg://postgres@localhost:5432/todo_app",
 )
 
 engine = create_engine(DATABASE_URL, future=True)
