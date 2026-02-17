@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import "./App.css";
 
 const API_BASE = "http://127.0.0.1:8000";
@@ -12,7 +12,7 @@ const TRANSLATIONS = {
   tr: {
     kicker: "Task command center",
     title: "Görev Merkezi",
-    subtitle: "Görev adı, başlangıç ve bitiş tarihi ile planını netleştir.",
+    subtitle: "Sadece kendi hesabına ait görevleri gör ve yönet.",
     total: "Toplam",
     active: "Aktif",
     done: "Tamamlanan",
@@ -35,7 +35,6 @@ const TRANSLATIONS = {
     open: "Açık",
     statusDone: "Bitti",
     toggleTask: "durumunu değiştir",
-    themeColor: "Renkli",
     themeLight: "Açık Mod",
     themeDark: "Koyu Mod",
     language: "Dil",
@@ -43,11 +42,22 @@ const TRANSLATIONS = {
     validationEmptyTitle: "Görev adı boş olamaz.",
     validationMissingDates: "Görev tarihi ve bitiş tarihi gerekli.",
     validationInvalidDates: "Başlangıç tarihi, bitiş tarihinden sonra olamaz.",
+    loginTab: "Giriş Yap",
+    registerTab: "Kayıt Ol",
+    username: "Kullanıcı adı",
+    password: "Şifre",
+    submitLogin: "Giriş Yap",
+    submitRegister: "Kayıt Ol",
+    authSubtitle: "Herkes sadece kendi görevlerini görür.",
+    logout: "Çıkış Yap",
+    loggedInAs: "Giriş yapan",
+    authLoading: "İşleniyor...",
+    authRequired: "Devam etmek için giriş yapmalısın.",
   },
   en: {
     kicker: "Task command center",
     title: "Task Center",
-    subtitle: "Plan clearly with task name, start date, and end date.",
+    subtitle: "See and manage only tasks that belong to your account.",
     total: "Total",
     active: "Active",
     done: "Done",
@@ -77,6 +87,17 @@ const TRANSLATIONS = {
     validationEmptyTitle: "Task title cannot be empty.",
     validationMissingDates: "Task date and end date are required.",
     validationInvalidDates: "Start date cannot be after end date.",
+    loginTab: "Login",
+    registerTab: "Register",
+    username: "Username",
+    password: "Password",
+    submitLogin: "Login",
+    submitRegister: "Register",
+    authSubtitle: "Everyone can only see their own tasks.",
+    logout: "Logout",
+    loggedInAs: "Logged in as",
+    authLoading: "Processing...",
+    authRequired: "You need to sign in to continue.",
   },
 };
 
@@ -112,6 +133,13 @@ function buildCalendarDays(monthDate) {
   });
 }
 
+function toErrorMessage(err, fallback) {
+  if (!err) return fallback;
+  if (typeof err === "string") return err;
+  if (err.message) return err.message;
+  return fallback;
+}
+
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
@@ -128,6 +156,14 @@ export default function App() {
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
 
+  const [token, setToken] = useState(() => localStorage.getItem("token") || "");
+  const [username, setUsername] = useState(() => localStorage.getItem("username") || "");
+  const [authMode, setAuthMode] = useState("login");
+  const [authUsername, setAuthUsername] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState("");
+
   const t = TRANSLATIONS[lang];
 
   useEffect(() => {
@@ -138,26 +174,81 @@ export default function App() {
     localStorage.setItem("lang", lang);
   }, [lang]);
 
-  const fetchTasks = async () => {
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (username) {
+      localStorage.setItem("username", username);
+    } else {
+      localStorage.removeItem("username");
+    }
+  }, [username]);
+
+  const logout = () => {
+    setToken("");
+    setUsername("");
+    setTasks([]);
+    setError("");
+    setLoading(false);
+  };
+
+  const apiRequest = useCallback(async (path, options = {}, requiresAuth = true) => {
+    const headers = { ...(options.headers || {}) };
+
+    if (requiresAuth && token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+    });
+
+    let data = null;
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      data = await res.json();
+    }
+
+    if (!res.ok) {
+      const detail = data?.detail || `HTTP ${res.status}`;
+      if (res.status === 401 && requiresAuth) {
+        logout();
+      }
+      throw new Error(detail);
+    }
+
+    return data;
+  }, [token]);
+
+  const fetchTasks = useCallback(async () => {
+    if (!token) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
-      const res = await fetch(`${API_BASE}/tasks`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const data = await res.json();
-      setTasks(data);
+      const data = await apiRequest("/tasks");
+      setTasks(data || []);
     } catch (err) {
-      setError(String(err));
+      setError(toErrorMessage(err, "Request failed"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, apiRequest]);
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [fetchTasks]);
 
   const visibleTasks = useMemo(() => {
     if (filter === "active") return tasks.filter((task) => !task.done);
@@ -191,6 +282,43 @@ export default function App() {
     );
   }, [activeMonth, lang]);
 
+  const submitAuth = async (event) => {
+    event.preventDefault();
+
+    if (!authUsername.trim() || !authPassword) {
+      setAuthError(t.authRequired);
+      return;
+    }
+
+    try {
+      setAuthBusy(true);
+      setAuthError("");
+
+      const endpoint = authMode === "login" ? "/auth/login" : "/auth/register";
+      const data = await apiRequest(
+        endpoint,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: authUsername.trim(),
+            password: authPassword,
+          }),
+        },
+        false,
+      );
+
+      setToken(data.access_token);
+      setUsername(data.username);
+      setAuthPassword("");
+      setAuthError("");
+    } catch (err) {
+      setAuthError(toErrorMessage(err, t.error));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
   const createTask = async (event) => {
     event.preventDefault();
     const cleanedTitle = title.trim();
@@ -213,7 +341,7 @@ export default function App() {
     try {
       setBusyId("create");
       setError("");
-      const res = await fetch(`${API_BASE}/tasks`, {
+      const newTask = await apiRequest("/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -223,15 +351,10 @@ export default function App() {
         }),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const newTask = await res.json();
       setTasks((prev) => [...prev, newTask]);
       setTitle("");
     } catch (err) {
-      setError(String(err));
+      setError(toErrorMessage(err, t.error));
     } finally {
       setBusyId(null);
     }
@@ -241,20 +364,15 @@ export default function App() {
     try {
       setBusyId(task.id);
       setError("");
-      const res = await fetch(`${API_BASE}/tasks/${task.id}`, {
+      const updatedTask = await apiRequest(`/tasks/${task.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ done: !task.done }),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const updatedTask = await res.json();
       setTasks((prev) => prev.map((item) => (item.id === task.id ? updatedTask : item)));
     } catch (err) {
-      setError(String(err));
+      setError(toErrorMessage(err, t.error));
     } finally {
       setBusyId(null);
     }
@@ -264,21 +382,118 @@ export default function App() {
     try {
       setBusyId(taskId);
       setError("");
-      const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
+      await apiRequest(`/tasks/${taskId}`, { method: "DELETE" });
       setTasks((prev) => prev.filter((item) => item.id !== taskId));
     } catch (err) {
-      setError(String(err));
+      setError(toErrorMessage(err, t.error));
     } finally {
       setBusyId(null);
     }
   };
+
+  const renderHeaderTools = () => (
+    <div className="header-tools">
+      <div className="switch-group" role="group" aria-label={t.theme}>
+        <button
+          type="button"
+          className={theme === "light" ? "switch-btn active" : "switch-btn"}
+          onClick={() => setTheme("light")}
+        >
+          {t.themeLight}
+        </button>
+        <button
+          type="button"
+          className={theme === "dark" ? "switch-btn active" : "switch-btn"}
+          onClick={() => setTheme("dark")}
+        >
+          {t.themeDark}
+        </button>
+      </div>
+      <div className="switch-group" role="group" aria-label={t.language}>
+        <button
+          type="button"
+          className={lang === "tr" ? "switch-btn active" : "switch-btn"}
+          onClick={() => setLang("tr")}
+        >
+          TR
+        </button>
+        <button
+          type="button"
+          className={lang === "en" ? "switch-btn active" : "switch-btn"}
+          onClick={() => setLang("en")}
+        >
+          EN
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!token) {
+    return (
+      <div className={`app-shell theme-${theme}`}>
+        <div className="ambient ambient-left" aria-hidden="true" />
+        <div className="ambient ambient-right" aria-hidden="true" />
+
+        <main className="board auth-board">
+          {renderHeaderTools()}
+
+          <header className="board-header">
+            <p className="kicker">{t.kicker}</p>
+            <h1>{t.title}</h1>
+            <p className="subtitle">{t.authSubtitle}</p>
+          </header>
+
+          <section className="auth-card">
+            <div className="auth-tabs" role="tablist" aria-label="auth modes">
+              <button
+                type="button"
+                className={authMode === "login" ? "active" : ""}
+                onClick={() => setAuthMode("login")}
+              >
+                {t.loginTab}
+              </button>
+              <button
+                type="button"
+                className={authMode === "register" ? "active" : ""}
+                onClick={() => setAuthMode("register")}
+              >
+                {t.registerTab}
+              </button>
+            </div>
+
+            <form className="auth-form" onSubmit={submitAuth}>
+              <input
+                type="text"
+                value={authUsername}
+                onChange={(event) => setAuthUsername(event.target.value)}
+                placeholder={t.username}
+                aria-label={t.username}
+                autoComplete="username"
+              />
+              <input
+                type="password"
+                value={authPassword}
+                onChange={(event) => setAuthPassword(event.target.value)}
+                placeholder={t.password}
+                aria-label={t.password}
+                autoComplete={authMode === "login" ? "current-password" : "new-password"}
+              />
+
+              <button type="submit" disabled={authBusy}>
+                {authBusy ? t.authLoading : authMode === "login" ? t.submitLogin : t.submitRegister}
+              </button>
+            </form>
+
+            {authError ? (
+              <p className="error-banner">
+                {t.error}: {authError}
+              </p>
+            ) : null}
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={`app-shell theme-${theme}`}>
@@ -286,41 +501,18 @@ export default function App() {
       <div className="ambient ambient-right" aria-hidden="true" />
 
       <main className="board">
+        {renderHeaderTools()}
+
         <header className="board-header">
-          <div className="header-tools">
-            <div className="switch-group" role="group" aria-label={t.theme}>
-              <button
-                type="button"
-                className={theme === "light" ? "switch-btn active" : "switch-btn"}
-                onClick={() => setTheme("light")}
-              >
-                {t.themeLight}
-              </button>
-              <button
-                type="button"
-                className={theme === "dark" ? "switch-btn active" : "switch-btn"}
-                onClick={() => setTheme("dark")}
-              >
-                {t.themeDark}
-              </button>
-            </div>
-            <div className="switch-group" role="group" aria-label={t.language}>
-              <button
-                type="button"
-                className={lang === "tr" ? "switch-btn active" : "switch-btn"}
-                onClick={() => setLang("tr")}
-              >
-                TR
-              </button>
-              <button
-                type="button"
-                className={lang === "en" ? "switch-btn active" : "switch-btn"}
-                onClick={() => setLang("en")}
-              >
-                EN
-              </button>
-            </div>
+          <div className="session-actions">
+            <span>
+              {t.loggedInAs}: <strong>{username}</strong>
+            </span>
+            <button type="button" className="logout-btn" onClick={logout}>
+              {t.logout}
+            </button>
           </div>
+
           <p className="kicker">{t.kicker}</p>
           <h1>{t.title}</h1>
           <p className="subtitle">{t.subtitle}</p>
@@ -388,11 +580,11 @@ export default function App() {
           </div>
         </section>
 
-        {error && (
+        {error ? (
           <p className="error-banner">
             {t.error}: {error}
           </p>
-        )}
+        ) : null}
 
         <section className="task-list" aria-live="polite">
           {loading ? <p className="empty-state">{t.loading}</p> : null}
@@ -496,3 +688,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -95,6 +95,10 @@
   animation: rise 0.8s ease;
 }
 
+.auth-board {
+  width: min(620px, 100%);
+}
+
 .header-tools {
   display: flex;
   justify-content: flex-end;
@@ -103,11 +107,109 @@
   flex-wrap: wrap;
 }
 
+.session-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.logout-btn {
+  border: 1px solid rgba(156, 184, 197, 0.28);
+  background: rgba(8, 23, 35, 0.85);
+  color: var(--ink-main);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.app-shell.theme-light .logout-btn {
+  background: rgba(248, 250, 253, 0.98);
+}
+
 .switch-group {
   display: inline-flex;
   border: 1px solid rgba(156, 184, 197, 0.28);
   border-radius: 999px;
   overflow: hidden;
+}
+
+.auth-card {
+  margin-top: 1.2rem;
+  background: rgba(13, 32, 48, 0.65);
+  border: 1px solid rgba(156, 184, 197, 0.24);
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+.app-shell.theme-light .auth-card {
+  background: rgba(247, 249, 253, 0.95);
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.auth-tabs button {
+  border: 1px solid rgba(156, 184, 197, 0.24);
+  background: rgba(7, 21, 31, 0.82);
+  color: var(--ink-soft);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-tabs button.active {
+  background: var(--accent-solid);
+  color: #0c1824;
+}
+
+.app-shell.theme-light .auth-tabs button {
+  background: rgba(248, 250, 253, 0.95);
+}
+
+.app-shell.theme-light .auth-tabs button.active {
+  color: #1c2330;
+}
+
+.auth-form {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.auth-form input {
+  border: 1px solid rgba(156, 184, 197, 0.4);
+  background: rgba(5, 15, 24, 0.62);
+  color: var(--ink-main);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+}
+
+.app-shell.theme-light .auth-form input {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.auth-form button {
+  border: 0;
+  border-radius: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(120deg, var(--accent-a), var(--accent-b));
+  color: #1b1103;
+  padding: 0.8rem 1.1rem;
+}
+
+.app-shell.theme-light .auth-form button {
+  color: #1c2330;
 }
 
 .switch-btn {
