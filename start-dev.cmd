@@ -31,9 +31,8 @@ if errorlevel 1 (
 )
 
 echo Backend ve frontend aciliyor...
-start "todo-backend" cmd /k "cd /d \"%BACKEND_DIR%\" && .venv\Scripts\activate.bat && uvicorn main:app --reload"
-start "todo-frontend" cmd /k "cd /d \"%FRONTEND_DIR%\" && npm run dev"
+start "todo-backend" cmd /k "cd /d ""%BACKEND_DIR%"" && call .venv\Scripts\activate.bat && uvicorn main:app --reload"
+start "todo-frontend" cmd /k "cd /d ""%FRONTEND_DIR%"" && npm.cmd run dev"
 
 echo Tamam. Iki ayri terminal acildi.
 endlocal
-
