@@ -1,8 +1,84 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
 const API_BASE = "http://127.0.0.1:8000";
-const WEEK_DAYS = ["Pzt", "Sal", "Çrş", "Prş", "Cum", "Cmt", "Paz"];
+const LOCALES = { tr: "tr-TR", en: "en-US" };
+const WEEK_DAYS = {
+  tr: ["Pzt", "Sal", "Çrş", "Prş", "Cum", "Cmt", "Paz"],
+  en: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+};
+
+const TRANSLATIONS = {
+  tr: {
+    kicker: "Task command center",
+    title: "Görev Merkezi",
+    subtitle: "Görev adı, başlangıç ve bitiş tarihi ile planını netleştir.",
+    total: "Toplam",
+    active: "Aktif",
+    done: "Tamamlanan",
+    taskName: "Görev adı",
+    taskDate: "Görev tarihi",
+    endDate: "Görev bitiş tarihi",
+    addTask: "Görev Ekle",
+    adding: "Ekleniyor...",
+    all: "Hepsi",
+    filterActive: "Aktif",
+    filterDone: "Tamamlanan",
+    error: "Hata",
+    loading: "Görevler yükleniyor...",
+    noTasks: "Bu filtrede görev bulunmuyor.",
+    delete: "Sil",
+    monthlyCalendar: "Aylık takvim",
+    prevMonth: "Önceki ay",
+    nextMonth: "Sonraki ay",
+    more: "daha",
+    open: "Açık",
+    statusDone: "Bitti",
+    toggleTask: "durumunu değiştir",
+    themeColor: "Renkli",
+    themeLight: "Açık Mod",
+    themeDark: "Koyu Mod",
+    language: "Dil",
+    theme: "Tema",
+    validationEmptyTitle: "Görev adı boş olamaz.",
+    validationMissingDates: "Görev tarihi ve bitiş tarihi gerekli.",
+    validationInvalidDates: "Başlangıç tarihi, bitiş tarihinden sonra olamaz.",
+  },
+  en: {
+    kicker: "Task command center",
+    title: "Task Center",
+    subtitle: "Plan clearly with task name, start date, and end date.",
+    total: "Total",
+    active: "Active",
+    done: "Done",
+    taskName: "Task name",
+    taskDate: "Start date",
+    endDate: "End date",
+    addTask: "Add Task",
+    adding: "Adding...",
+    all: "All",
+    filterActive: "Active",
+    filterDone: "Done",
+    error: "Error",
+    loading: "Loading tasks...",
+    noTasks: "No tasks in this filter.",
+    delete: "Delete",
+    monthlyCalendar: "Monthly calendar",
+    prevMonth: "Previous month",
+    nextMonth: "Next month",
+    more: "more",
+    open: "Open",
+    statusDone: "Done",
+    toggleTask: "toggle status",
+    themeLight: "Light Mode",
+    themeDark: "Dark Mode",
+    language: "Language",
+    theme: "Theme",
+    validationEmptyTitle: "Task title cannot be empty.",
+    validationMissingDates: "Task date and end date are required.",
+    validationInvalidDates: "Start date cannot be after end date.",
+  },
+};
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -45,10 +121,22 @@ export default function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+  const [lang, setLang] = useState(() => localStorage.getItem("lang") || "tr");
   const [activeMonth, setActiveMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+
+  const t = TRANSLATIONS[lang];
+
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("lang", lang);
+  }, [lang]);
 
   const fetchTasks = async () => {
     try {
@@ -98,27 +186,27 @@ export default function App() {
   const calendarDays = useMemo(() => buildCalendarDays(activeMonth), [activeMonth]);
 
   const monthLabel = useMemo(() => {
-    return new Intl.DateTimeFormat("tr-TR", { month: "long", year: "numeric" }).format(
+    return new Intl.DateTimeFormat(LOCALES[lang], { month: "long", year: "numeric" }).format(
       activeMonth,
     );
-  }, [activeMonth]);
+  }, [activeMonth, lang]);
 
   const createTask = async (event) => {
     event.preventDefault();
     const cleanedTitle = title.trim();
 
     if (!cleanedTitle) {
-      setError("Görev adı boş olamaz.");
+      setError(t.validationEmptyTitle);
       return;
     }
 
     if (!startDate || !endDate) {
-      setError("Görev tarihi ve bitiş tarihi gerekli.");
+      setError(t.validationMissingDates);
       return;
     }
 
     if (startDate > endDate) {
-      setError("Başlangıç tarihi, bitiş tarihinden sonra olamaz.");
+      setError(t.validationInvalidDates);
       return;
     }
 
@@ -193,28 +281,62 @@ export default function App() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell theme-${theme}`}>
       <div className="ambient ambient-left" aria-hidden="true" />
       <div className="ambient ambient-right" aria-hidden="true" />
 
       <main className="board">
         <header className="board-header">
-          <p className="kicker">Task command center</p>
-          <h1>Görev Merkezi</h1>
-          <p className="subtitle">Görev adı, başlangıç ve bitiş tarihi ile planını netleştir.</p>
+          <div className="header-tools">
+            <div className="switch-group" role="group" aria-label={t.theme}>
+              <button
+                type="button"
+                className={theme === "light" ? "switch-btn active" : "switch-btn"}
+                onClick={() => setTheme("light")}
+              >
+                {t.themeLight}
+              </button>
+              <button
+                type="button"
+                className={theme === "dark" ? "switch-btn active" : "switch-btn"}
+                onClick={() => setTheme("dark")}
+              >
+                {t.themeDark}
+              </button>
+            </div>
+            <div className="switch-group" role="group" aria-label={t.language}>
+              <button
+                type="button"
+                className={lang === "tr" ? "switch-btn active" : "switch-btn"}
+                onClick={() => setLang("tr")}
+              >
+                TR
+              </button>
+              <button
+                type="button"
+                className={lang === "en" ? "switch-btn active" : "switch-btn"}
+                onClick={() => setLang("en")}
+              >
+                EN
+              </button>
+            </div>
+          </div>
+          <p className="kicker">{t.kicker}</p>
+          <h1>{t.title}</h1>
+          <p className="subtitle">{t.subtitle}</p>
         </header>
 
         <section className="stats-grid" aria-label="Task stats">
           <article className="stat-card">
-            <span>Total</span>
+            <span>{t.total}</span>
             <strong>{stats.total}</strong>
           </article>
           <article className="stat-card">
-            <span>Active</span>
+            <span>{t.active}</span>
             <strong>{stats.active}</strong>
           </article>
           <article className="stat-card">
-            <span>Done</span>
+            <span>{t.done}</span>
             <strong>{stats.done}</strong>
           </article>
         </section>
@@ -225,34 +347,34 @@ export default function App() {
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Görev adı"
-              aria-label="Görev adı"
+              placeholder={t.taskName}
+              aria-label={t.taskName}
             />
 
             <input
               type="date"
               value={startDate}
               onChange={(event) => setStartDate(event.target.value)}
-              aria-label="Görev tarihi"
+              aria-label={t.taskDate}
             />
 
             <input
               type="date"
               value={endDate}
               onChange={(event) => setEndDate(event.target.value)}
-              aria-label="Görev bitiş tarihi"
+              aria-label={t.endDate}
             />
 
             <button type="submit" disabled={busyId === "create"}>
-              {busyId === "create" ? "Ekleniyor..." : "Görev Ekle"}
+              {busyId === "create" ? t.adding : t.addTask}
             </button>
           </form>
 
           <div className="filters" role="tablist" aria-label="Task filters">
             {[
-              { key: "all", label: "Hepsi" },
-              { key: "active", label: "Aktif" },
-              { key: "done", label: "Tamamlanan" },
+              { key: "all", label: t.all },
+              { key: "active", label: t.filterActive },
+              { key: "done", label: t.filterDone },
             ].map((option) => (
               <button
                 key={option.key}
@@ -266,14 +388,16 @@ export default function App() {
           </div>
         </section>
 
-        {error && <p className="error-banner">Hata: {error}</p>}
+        {error && (
+          <p className="error-banner">
+            {t.error}: {error}
+          </p>
+        )}
 
         <section className="task-list" aria-live="polite">
-          {loading ? <p className="empty-state">Görevler yükleniyor...</p> : null}
+          {loading ? <p className="empty-state">{t.loading}</p> : null}
 
-          {!loading && visibleTasks.length === 0 ? (
-            <p className="empty-state">Bu filtrede görev bulunmuyor.</p>
-          ) : null}
+          {!loading && visibleTasks.length === 0 ? <p className="empty-state">{t.noTasks}</p> : null}
 
           {visibleTasks.map((task) => (
             <article key={task.id} className={`task-card ${task.done ? "done" : ""}`}>
@@ -282,9 +406,9 @@ export default function App() {
                 type="button"
                 onClick={() => toggleTask(task)}
                 disabled={busyId === task.id}
-                aria-label={`${task.title} durumunu değiştir`}
+                aria-label={`${task.title} ${t.toggleTask}`}
               >
-                {task.done ? "Done" : "Open"}
+                {task.done ? t.statusDone : t.open}
               </button>
 
               <div className="task-content">
@@ -300,22 +424,20 @@ export default function App() {
                 onClick={() => deleteTask(task.id)}
                 disabled={busyId === task.id}
               >
-                Sil
+                {t.delete}
               </button>
             </article>
           ))}
         </section>
 
-        <section className="calendar-panel" aria-label="Aylık takvim">
+        <section className="calendar-panel" aria-label={t.monthlyCalendar}>
           <header className="calendar-header">
             <button
               type="button"
               onClick={() =>
-                setActiveMonth(
-                  (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
-                )
+                setActiveMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
               }
-              aria-label="Önceki ay"
+              aria-label={t.prevMonth}
             >
               &lt;
             </button>
@@ -325,18 +447,16 @@ export default function App() {
             <button
               type="button"
               onClick={() =>
-                setActiveMonth(
-                  (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
-                )
+                setActiveMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
               }
-              aria-label="Sonraki ay"
+              aria-label={t.nextMonth}
             >
               &gt;
             </button>
           </header>
 
           <div className="calendar-grid">
-            {WEEK_DAYS.map((day) => (
+            {WEEK_DAYS[lang].map((day) => (
               <div key={day} className="calendar-weekday">
                 {day}
               </div>
@@ -362,7 +482,9 @@ export default function App() {
                       </p>
                     ))}
                     {dayTasks.length > 2 ? (
-                      <p className="calendar-more">+{dayTasks.length - 2} daha</p>
+                      <p className="calendar-more">
+                        +{dayTasks.length - 2} {t.more}
+                      </p>
                     ) : null}
                   </div>
                 </article>
