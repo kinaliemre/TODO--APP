@@ -17,7 +17,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "Backend calisiyor"}
+    return {"message": "Backend çalışıyor"}
 
 
 def _seed_tasks() -> list[dict]:
@@ -25,14 +25,14 @@ def _seed_tasks() -> list[dict]:
     return [
         {
             "id": 1,
-            "title": "Ilk gorev",
+            "title": "İlk görev",
             "done": False,
             "start_date": today,
             "end_date": today + timedelta(days=2),
         },
         {
             "id": 2,
-            "title": "Backend hazirla",
+            "title": "Backend hazırla",
             "done": True,
             "start_date": today - timedelta(days=5),
             "end_date": today - timedelta(days=1),
@@ -58,7 +58,7 @@ class TaskUpdate(BaseModel):
 
 def _validate_dates(start_date: date, end_date: date) -> None:
     if start_date > end_date:
-        raise HTTPException(status_code=400, detail="start_date cannot be after end_date")
+        raise HTTPException(status_code=400, detail="Başlangıç tarihi bitiş tarihinden sonra olamaz")
 
 
 @app.get("/tasks")

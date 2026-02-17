@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
 const API_BASE = "http://127.0.0.1:8000";
-const WEEK_DAYS = ["Pzt", "Sal", "Cars", "Pers", "Cum", "Cmt", "Paz"];
+const WEEK_DAYS = ["Pzt", "Sal", "Çrş", "Prş", "Cum", "Cmt", "Paz"];
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -108,17 +108,17 @@ export default function App() {
     const cleanedTitle = title.trim();
 
     if (!cleanedTitle) {
-      setError("Gorev adi bos olamaz.");
+      setError("Görev adı boş olamaz.");
       return;
     }
 
     if (!startDate || !endDate) {
-      setError("Gorev tarihi ve bitis tarihi gerekli.");
+      setError("Görev tarihi ve bitiş tarihi gerekli.");
       return;
     }
 
     if (startDate > endDate) {
-      setError("Baslangic tarihi, bitis tarihinden sonra olamaz.");
+      setError("Başlangıç tarihi, bitiş tarihinden sonra olamaz.");
       return;
     }
 
@@ -200,8 +200,8 @@ export default function App() {
       <main className="board">
         <header className="board-header">
           <p className="kicker">Task command center</p>
-          <h1>Gorev Merkezi</h1>
-          <p className="subtitle">Gorev adi, baslangic ve bitis tarihi ile planini netlestir.</p>
+          <h1>Görev Merkezi</h1>
+          <p className="subtitle">Görev adı, başlangıç ve bitiş tarihi ile planını netleştir.</p>
         </header>
 
         <section className="stats-grid" aria-label="Task stats">
@@ -225,26 +225,26 @@ export default function App() {
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Gorev adi"
-              aria-label="Gorev adi"
+              placeholder="Görev adı"
+              aria-label="Görev adı"
             />
 
             <input
               type="date"
               value={startDate}
               onChange={(event) => setStartDate(event.target.value)}
-              aria-label="Gorev tarihi"
+              aria-label="Görev tarihi"
             />
 
             <input
               type="date"
               value={endDate}
               onChange={(event) => setEndDate(event.target.value)}
-              aria-label="Gorev bitis tarihi"
+              aria-label="Görev bitiş tarihi"
             />
 
             <button type="submit" disabled={busyId === "create"}>
-              {busyId === "create" ? "Ekleniyor..." : "Gorev Ekle"}
+              {busyId === "create" ? "Ekleniyor..." : "Görev Ekle"}
             </button>
           </form>
 
@@ -269,10 +269,10 @@ export default function App() {
         {error && <p className="error-banner">Hata: {error}</p>}
 
         <section className="task-list" aria-live="polite">
-          {loading ? <p className="empty-state">Gorevler yukleniyor...</p> : null}
+          {loading ? <p className="empty-state">Görevler yükleniyor...</p> : null}
 
           {!loading && visibleTasks.length === 0 ? (
-            <p className="empty-state">Bu filtrede gorev bulunmuyor.</p>
+            <p className="empty-state">Bu filtrede görev bulunmuyor.</p>
           ) : null}
 
           {visibleTasks.map((task) => (
@@ -282,7 +282,7 @@ export default function App() {
                 type="button"
                 onClick={() => toggleTask(task)}
                 disabled={busyId === task.id}
-                aria-label={`${task.title} durumunu degistir`}
+                aria-label={`${task.title} durumunu değiştir`}
               >
                 {task.done ? "Done" : "Open"}
               </button>
@@ -306,7 +306,7 @@ export default function App() {
           ))}
         </section>
 
-        <section className="calendar-panel" aria-label="Aylik takvim">
+        <section className="calendar-panel" aria-label="Aylık takvim">
           <header className="calendar-header">
             <button
               type="button"
@@ -315,7 +315,7 @@ export default function App() {
                   (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
                 )
               }
-              aria-label="Onceki ay"
+              aria-label="Önceki ay"
             >
               &lt;
             </button>
