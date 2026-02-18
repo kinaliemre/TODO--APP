@@ -25,12 +25,13 @@ def create_app() -> FastAPI:
         UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
         Base.metadata.create_all(bind=engine)
 
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id)"))
-            conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS priority VARCHAR(16) DEFAULT 'medium'"))
-            conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS tags VARCHAR(500) DEFAULT ''"))
-            conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notes VARCHAR(2000) DEFAULT ''"))
-            conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurring VARCHAR(16) DEFAULT 'none'"))
+        if engine.dialect.name == "postgresql":
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id)"))
+                conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS priority VARCHAR(16) DEFAULT 'medium'"))
+                conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS tags VARCHAR(500) DEFAULT ''"))
+                conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS notes VARCHAR(2000) DEFAULT ''"))
+                conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurring VARCHAR(16) DEFAULT 'none'"))
 
     @app.get("/", response_model=MessageOut)
     def root() -> MessageOut:
@@ -42,4 +43,5 @@ def create_app() -> FastAPI:
     app.include_router(tasks.router)
 
     return app
+
 
