@@ -306,10 +306,214 @@
 }
 
 .board-header .subtitle {
-  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
-  font-weight: 800;
-  font-style: italic;
+  font-size: clamp(0.98rem, 1.8vw, 1.15rem);
+  font-weight: 700;
   line-height: 1.35;
+}
+
+.title-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
+  gap: 0.8rem;
+  align-items: stretch;
+}
+
+.title-main {
+  background: rgba(13, 32, 48, 0.68);
+  border: 1px solid rgba(156, 184, 197, 0.24);
+  border-radius: 16px;
+  padding: 0.8rem 1rem;
+}
+
+.title-main-clickable {
+  cursor: pointer;
+}
+
+.title-main h1,
+.title-notes-card h2 {
+  font-size: clamp(1.7rem, 4.2vw, 2.55rem);
+  line-height: 1.1;
+  margin: 0 0 0.2rem;
+}
+
+.title-notes-card {
+  border: 1px solid rgba(156, 184, 197, 0.24);
+  border-radius: 16px;
+  background: rgba(13, 32, 48, 0.68);
+  color: var(--ink-main);
+  padding: 0.8rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  align-content: center;
+  gap: 0.3rem;
+}
+
+.title-notes-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: clamp(0.98rem, 1.8vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.notes-page {
+  margin-top: 1.3rem;
+  background: rgba(13, 32, 48, 0.68);
+  border: 1px solid rgba(156, 184, 197, 0.24);
+  border-radius: 18px;
+  padding: 1rem;
+  min-height: 62vh;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.notes-page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.notes-page-head-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.notes-page-head h2 {
+  margin: 0;
+  font-size: clamp(1.7rem, 4.2vw, 2.45rem);
+}
+
+.notes-history h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+}
+
+.notes-history {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.notes-today {
+  margin: 0;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.notes-title-input {
+  width: 100%;
+  border: 1px solid rgba(156, 184, 197, 0.4);
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+  background: rgba(5, 15, 24, 0.62);
+  color: var(--ink-main);
+}
+
+.notes-page-editor {
+  width: 100%;
+  min-height: 34vh;
+  border: 1px solid rgba(156, 184, 197, 0.4);
+  border-radius: 14px;
+  padding: 1rem;
+  resize: vertical;
+  background: rgba(5, 15, 24, 0.62);
+  color: var(--ink-main);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.notes-timeline {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.note-item {
+  background: rgba(7, 20, 30, 0.5);
+  border: 1px solid rgba(156, 184, 197, 0.22);
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem;
+}
+
+.note-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.note-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.note-item-head strong {
+  font-size: 0.98rem;
+}
+
+.note-item-head span {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.note-item p {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.note-item-text {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.note-item-title {
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+}
+
+.note-delete-btn {
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.16);
+  color: #fee2e2;
+  border-radius: 10px;
+  min-width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.app-shell.theme-light .note-delete-btn {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.app-shell.theme-light .title-main,
+.app-shell.theme-light .title-notes-card,
+.app-shell.theme-light .notes-page {
+  background: rgba(247, 249, 253, 0.95);
+}
+
+.app-shell.theme-light .notes-page-editor {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.app-shell.theme-light .notes-title-input {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.app-shell.theme-light .note-item {
+  background: rgba(255, 255, 255, 0.94);
 }
 
 .stats-grid {
@@ -1362,6 +1566,10 @@
 }
 
 @media (max-width: 900px) {
+  .title-layout {
+    grid-template-columns: 1fr;
+  }
+
   .hub-tabs {
     grid-template-columns: 1fr 1fr;
   }

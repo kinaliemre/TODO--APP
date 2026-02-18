@@ -56,8 +56,33 @@ export default function App() {
   const [profileUsername, setProfileUsername] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [quickNoteTitle, setQuickNoteTitle] = useState("");
+  const [quickNote, setQuickNote] = useState("");
+  const [noteEntries, setNoteEntries] = useState(() => {
+    try {
+      const raw = localStorage.getItem("dailyNotes");
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) return parsed;
+      if (parsed && typeof parsed === "object") {
+        return Object.values(parsed).map((entry) => ({
+          id: `legacy-${entry.dateKey}`,
+          dateKey: entry.dateKey,
+          dateLabel: entry.dateLabel,
+          dayLabel: entry.dayLabel,
+          title: entry.title || "",
+          text: entry.text,
+          createdAt: `${entry.dateKey}T00:00:00.000Z`,
+        }));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
   const [selectedFiles, setSelectedFiles] = useState({});
   const [activeControlTab, setActiveControlTab] = useState(null);
+  const [activeView, setActiveView] = useState("dashboard");
+  const [showNotesHistory, setShowNotesHistory] = useState(false);
 
   const t = TRANSLATIONS[lang];
   const priorityLabel = { low: t.priorityLow, medium: t.priorityMedium, high: t.priorityHigh };
@@ -72,6 +97,7 @@ export default function App() {
   useEffect(() => localStorage.setItem("lang", lang), [lang]);
   useEffect(() => (token ? localStorage.setItem("token", token) : localStorage.removeItem("token")), [token]);
   useEffect(() => (username ? localStorage.setItem("username", username) : localStorage.removeItem("username")), [username]);
+  useEffect(() => localStorage.setItem("dailyNotes", JSON.stringify(noteEntries)), [noteEntries]);
 
   const logout = useCallback(() => {
     setToken("");
@@ -166,6 +192,63 @@ export default function App() {
     () => new Intl.DateTimeFormat(LOCALES[lang], { month: "long", year: "numeric" }).format(activeMonth),
     [activeMonth, lang],
   );
+
+  const getTodayKey = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayKey = getTodayKey();
+
+  const todayMeta = useMemo(() => {
+    const now = new Date();
+    const dateLabel = new Intl.DateTimeFormat(LOCALES[lang], {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(now);
+    const rawDay = new Intl.DateTimeFormat(LOCALES[lang], { weekday: "long" }).format(now);
+    const dayLabel = rawDay.charAt(0).toUpperCase() + rawDay.slice(1);
+    return { dateLabel, dayLabel };
+  }, [todayKey, lang]);
+
+  const historyEntries = useMemo(
+    () => [...noteEntries].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+    [noteEntries],
+  );
+
+  const todayEntriesCount = useMemo(
+    () => noteEntries.filter((entry) => entry.dateKey === todayKey).length,
+    [noteEntries, todayKey],
+  );
+
+  const saveTodayNote = () => {
+    const title = quickNoteTitle.trim();
+    const text = quickNote.trim();
+    if (!text) return;
+
+    setNoteEntries((prev) => [
+      ...prev,
+      {
+        id: `${todayKey}-${Date.now()}`,
+        dateKey: todayKey,
+        dateLabel: todayMeta.dateLabel,
+        dayLabel: todayMeta.dayLabel,
+        title,
+        text,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setQuickNoteTitle("");
+    setQuickNote("");
+  };
+
+  const deleteNoteEntry = (entryId) => {
+    setNoteEntries((prev) => prev.filter((entry) => entry.id !== entryId));
+  };
 
   const submitAuth = async (event) => {
     event.preventDefault();
@@ -394,155 +477,250 @@ export default function App() {
               {t.logout}
             </button>
           </div>
-          <h1>{t.title}</h1>
-          <p className="subtitle">{t.subtitle}</p>
-        </header>
-
-        <StatsGrid stats={stats} t={t} />
-
-        <div className="session-controls-row">
-          <div className="session-controls">
-            <button
-              type="button"
-              className={activeControlTab === "notifications" ? "session-tab-btn active" : "session-tab-btn"}
-              onClick={() => toggleControlTab("notifications")}
+          <div className="title-layout">
+            <div
+              className={activeView === "notes" ? "title-main title-main-clickable" : "title-main"}
+              role={activeView === "notes" ? "button" : undefined}
+              tabIndex={activeView === "notes" ? 0 : undefined}
+              onClick={activeView === "notes" ? () => setActiveView("dashboard") : undefined}
+              onKeyDown={
+                activeView === "notes"
+                  ? (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setActiveView("dashboard");
+                      }
+                    }
+                  : undefined
+              }
             >
-              {t.notifications}
-            </button>
-            <button
-              type="button"
-              className={activeControlTab === "profile" ? "session-tab-btn active" : "session-tab-btn"}
-              onClick={() => toggleControlTab("profile")}
-            >
-              {t.profile}
-            </button>
-            <button
-              type="button"
-              className={activeControlTab === "password" ? "session-tab-btn active" : "session-tab-btn"}
-              onClick={() => toggleControlTab("password")}
-            >
-              {t.password}
-            </button>
-            <button
-              type="button"
-              className={activeControlTab === "danger" ? "session-tab-btn active danger" : "session-tab-btn danger"}
-              onClick={() => toggleControlTab("danger")}
-            >
-              {t.deleteAccount}
-            </button>
-            <button
-              type="button"
-              className={activeControlTab === "search" ? "session-tab-btn active" : "session-tab-btn"}
-              onClick={() => toggleControlTab("search")}
-            >
-              {t.searchFieldLabel}
-            </button>
-            <button
-              type="button"
-              className={activeControlTab === "task" ? "session-tab-btn active" : "session-tab-btn"}
-              onClick={() => toggleControlTab("task")}
-            >
-              {t.addTask}
+              <h1>{t.title}</h1>
+              <p className="subtitle">{t.subtitle}</p>
+            </div>
+            <button type="button" className="title-notes-card" onClick={() => setActiveView("notes")}>
+              <h2>{t.notesPageTitle}</h2>
+              <p>{t.notesCardDesc}</p>
             </button>
           </div>
-        </div>
+        </header>
+        {activeView === "notes" ? (
+          <section className="notes-page" aria-label={t.notesPageTitle}>
+            <div className="notes-page-head">
+              <h2>{t.notesPageTitle}</h2>
+              <div className="notes-page-head-actions">
+                <button type="button" className="session-tab-btn" onClick={() => setActiveView("dashboard")}>
+                  {t.backToTaskCenter}
+                </button>
+                <button
+                  type="button"
+                  className={showNotesHistory ? "session-tab-btn active" : "session-tab-btn"}
+                  onClick={() => setShowNotesHistory((prev) => !prev)}
+                >
+                  {t.notesHistory}
+                </button>
+                <button type="button" className="session-tab-btn active" onClick={saveTodayNote}>
+                  {t.addTodayNote}
+                </button>
+              </div>
+            </div>
+            {showNotesHistory ? (
+              <section className="notes-history" aria-label={t.notesHistory}>
+                <h3>{t.notesHistory}</h3>
+                <div className="notes-timeline">
+                  {historyEntries.length === 0 ? (
+                    <p className="empty-state">{t.noSavedNotes}</p>
+                  ) : (
+                    historyEntries.map((entry) => (
+                      <article key={entry.id} className="note-item">
+                        <div className="note-item-head">
+                          <div className="note-item-meta">
+                            <strong>{entry.dateLabel}</strong>
+                            <span>{entry.dayLabel}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="note-delete-btn"
+                            onClick={() => deleteNoteEntry(entry.id)}
+                            aria-label={`${entry.dateLabel} ${t.deleteNoteAria}`}
+                            title={t.delete}
+                          >
+                            🗑
+                          </button>
+                        </div>
+                        {entry.title ? <p className="note-item-title">{entry.title}</p> : null}
+                        <p className="note-item-text">{entry.text}</p>
+                      </article>
+                    ))
+                  )}
+                </div>
+              </section>
+            ) : null}
+            <p className="notes-today">
+              {t.todayNotesLabel} - {todayMeta.dateLabel} - {todayMeta.dayLabel} ({todayEntriesCount} {t.recordsCount})
+            </p>
+            <input
+              type="text"
+              className="notes-title-input"
+              value={quickNoteTitle}
+              onChange={(event) => setQuickNoteTitle(event.target.value)}
+              placeholder={t.optionalTitle}
+            />
+            <textarea
+              className="notes-page-editor"
+              value={quickNote}
+              onChange={(event) => setQuickNote(event.target.value)}
+              placeholder={t.todayNotePlaceholder}
+            />
+          </section>
+        ) : (
+          <>
+            <StatsGrid stats={stats} t={t} />
 
-        {["notifications", "profile", "password", "danger"].includes(activeControlTab) ? (
-          <ControlHub
-            t={t}
-            activeTab={activeControlTab}
-            notifications={notifications}
-            profileUsername={profileUsername}
-            setProfileUsername={setProfileUsername}
-            updateUsername={updateUsername}
-            currentPassword={currentPassword}
-            setCurrentPassword={setCurrentPassword}
-            newPassword={newPassword}
-            setNewPassword={setNewPassword}
-            updatePassword={updatePassword}
-            deleteAccount={deleteAccount}
-          />
-        ) : null}
+            <div className="session-controls-row">
+              <div className="session-controls">
+                <button
+                  type="button"
+                  className={activeControlTab === "notifications" ? "session-tab-btn active" : "session-tab-btn"}
+                  onClick={() => toggleControlTab("notifications")}
+                >
+                  {t.notifications}
+                </button>
+                <button
+                  type="button"
+                  className={activeControlTab === "profile" ? "session-tab-btn active" : "session-tab-btn"}
+                  onClick={() => toggleControlTab("profile")}
+                >
+                  {t.profile}
+                </button>
+                <button
+                  type="button"
+                  className={activeControlTab === "password" ? "session-tab-btn active" : "session-tab-btn"}
+                  onClick={() => toggleControlTab("password")}
+                >
+                  {t.password}
+                </button>
+                <button
+                  type="button"
+                  className={activeControlTab === "danger" ? "session-tab-btn active danger" : "session-tab-btn danger"}
+                  onClick={() => toggleControlTab("danger")}
+                >
+                  {t.deleteAccount}
+                </button>
+                <button
+                  type="button"
+                  className={activeControlTab === "search" ? "session-tab-btn active" : "session-tab-btn"}
+                  onClick={() => toggleControlTab("search")}
+                >
+                  {t.searchFieldLabel}
+                </button>
+                <button
+                  type="button"
+                  className={activeControlTab === "task" ? "session-tab-btn active" : "session-tab-btn"}
+                  onClick={() => toggleControlTab("task")}
+                >
+                  {t.addTask}
+                </button>
+              </div>
+            </div>
 
-        {activeControlTab === "search" ? (
-          <SearchPanel
-            className="control-hub search-panel embedded-search-panel"
-            t={t}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            searchTag={searchTag}
-            setSearchTag={setSearchTag}
-            searchPriority={searchPriority}
-            setSearchPriority={setSearchPriority}
-            dueFrom={dueFrom}
-            setDueFrom={setDueFrom}
-            dueTo={dueTo}
-            setDueTo={setDueTo}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            priorityLabel={priorityLabel}
-          />
-        ) : null}
+            {["notifications", "profile", "password", "danger"].includes(activeControlTab) ? (
+              <ControlHub
+                t={t}
+                activeTab={activeControlTab}
+                notifications={notifications}
+                profileUsername={profileUsername}
+                setProfileUsername={setProfileUsername}
+                updateUsername={updateUsername}
+                currentPassword={currentPassword}
+                setCurrentPassword={setCurrentPassword}
+                newPassword={newPassword}
+                setNewPassword={setNewPassword}
+                updatePassword={updatePassword}
+                deleteAccount={deleteAccount}
+              />
+            ) : null}
 
-        {activeControlTab === "task" ? (
-          <TaskForm
-            className="control-panel control-hub embedded-task-panel"
-            t={t}
-            title={title}
-            setTitle={setTitle}
-            startDate={startDate}
-            setStartDate={setStartDate}
-            endDate={endDate}
-            setEndDate={setEndDate}
-            priority={priority}
-            setPriority={setPriority}
-            recurring={recurring}
-            setRecurring={setRecurring}
-            tagsInput={tagsInput}
-            setTagsInput={setTagsInput}
-            notes={notes}
-            setNotes={setNotes}
-            createTask={createTask}
-            busyId={busyId}
-            filter={filter}
-            setFilter={setFilter}
-            priorityLabel={priorityLabel}
-            recurringLabel={recurringLabel}
-          />
-        ) : null}
+            {activeControlTab === "search" ? (
+              <SearchPanel
+                className="control-hub search-panel embedded-search-panel"
+                t={t}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                searchTag={searchTag}
+                setSearchTag={setSearchTag}
+                searchPriority={searchPriority}
+                setSearchPriority={setSearchPriority}
+                dueFrom={dueFrom}
+                setDueFrom={setDueFrom}
+                dueTo={dueTo}
+                setDueTo={setDueTo}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                priorityLabel={priorityLabel}
+              />
+            ) : null}
 
-        {error ? (
-          <p className="error-banner">
-            {t.error}: {error}
-          </p>
-        ) : null}
-        {success ? <p className="success-banner">{success}</p> : null}
+            {activeControlTab === "task" ? (
+              <TaskForm
+                className="control-panel control-hub embedded-task-panel"
+                t={t}
+                title={title}
+                setTitle={setTitle}
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                priority={priority}
+                setPriority={setPriority}
+                recurring={recurring}
+                setRecurring={setRecurring}
+                tagsInput={tagsInput}
+                setTagsInput={setTagsInput}
+                notes={notes}
+                setNotes={setNotes}
+                createTask={createTask}
+                busyId={busyId}
+                filter={filter}
+                setFilter={setFilter}
+                priorityLabel={priorityLabel}
+                recurringLabel={recurringLabel}
+              />
+            ) : null}
 
-        <TaskList
-          t={t}
-          tasks={tasks}
-          loading={loading}
-          busyId={busyId}
-          updateTaskState={updateTaskState}
-          deleteTask={deleteTask}
-          priorityLabel={priorityLabel}
-          recurringLabel={recurringLabel}
-          setSelectedFiles={setSelectedFiles}
-          selectedFiles={selectedFiles}
-          uploadAttachment={uploadAttachment}
-          uploadingTaskId={uploadingTaskId}
-          downloadAttachment={downloadAttachment}
-          removeAttachment={removeAttachment}
-        />
+            {error ? (
+              <p className="error-banner">
+                {t.error}: {error}
+              </p>
+            ) : null}
+            {success ? <p className="success-banner">{success}</p> : null}
 
-        <CalendarPanel
-          t={t}
-          setActiveMonth={setActiveMonth}
-          monthLabel={monthLabel}
-          calendarDays={calendarDays}
-          tasksByEndDate={tasksByEndDate}
-          lang={lang}
-        />
+            <TaskList
+              t={t}
+              tasks={tasks}
+              loading={loading}
+              busyId={busyId}
+              updateTaskState={updateTaskState}
+              deleteTask={deleteTask}
+              priorityLabel={priorityLabel}
+              recurringLabel={recurringLabel}
+              setSelectedFiles={setSelectedFiles}
+              selectedFiles={selectedFiles}
+              uploadAttachment={uploadAttachment}
+              uploadingTaskId={uploadingTaskId}
+              downloadAttachment={downloadAttachment}
+              removeAttachment={removeAttachment}
+            />
+
+            <CalendarPanel
+              t={t}
+              setActiveMonth={setActiveMonth}
+              monthLabel={monthLabel}
+              calendarDays={calendarDays}
+              tasksByEndDate={tasksByEndDate}
+              lang={lang}
+            />
+          </>
+        )}
       </main>
     </div>
   );
