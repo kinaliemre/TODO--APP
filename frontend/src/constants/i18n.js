@@ -10,7 +10,7 @@ export const WEEK_DAYS = {
 export const TRANSLATIONS = {
   tr: {
     title: "Görev Merkezi",
-    subtitle: "Kendi hesabına özel görevleri yönet.",
+    subtitle: "Her tamamlanan görev, inşa edilen bir karakterdir.",
     total: "Toplam",
     active: "Aktif",
     done: "Tamamlanan",

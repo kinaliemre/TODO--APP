@@ -255,6 +255,13 @@
   color: var(--ink-soft);
 }
 
+.board-header .subtitle {
+  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1.35;
+}
+
 .stats-grid {
   margin-top: 1.5rem;
   display: grid;
@@ -500,8 +507,8 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  border-left: 1px solid rgba(156, 184, 197, 0.2);
-  border-top: 1px solid rgba(156, 184, 197, 0.2);
+  border-left: 1px solid rgba(156, 184, 197, 0.38);
+  border-top: 1px solid rgba(156, 184, 197, 0.38);
 }
 
 .calendar-weekday {
@@ -510,8 +517,8 @@
   font-weight: 700;
   text-align: center;
   padding: 0.7rem 0.25rem;
-  border-right: 1px solid rgba(156, 184, 197, 0.2);
-  border-bottom: 1px solid rgba(156, 184, 197, 0.2);
+  border-right: 1px solid rgba(156, 184, 197, 0.38);
+  border-bottom: 1px solid rgba(156, 184, 197, 0.38);
 }
 
 .app-shell.theme-light .calendar-weekday {
@@ -522,13 +529,25 @@
 .calendar-cell {
   min-height: 135px;
   padding: 0.55rem;
-  border-right: 1px solid rgba(156, 184, 197, 0.2);
-  border-bottom: 1px solid rgba(156, 184, 197, 0.2);
+  border-right: 1px solid rgba(156, 184, 197, 0.38);
+  border-bottom: 1px solid rgba(156, 184, 197, 0.38);
   background: rgba(10, 24, 36, 0.76);
 }
 
+.app-shell.theme-light .calendar-grid {
+  border-left-color: rgba(140, 156, 178, 0.55);
+  border-top-color: rgba(140, 156, 178, 0.55);
+}
+
 .app-shell.theme-light .calendar-cell {
+  border-right-color: rgba(140, 156, 178, 0.55);
+  border-bottom-color: rgba(140, 156, 178, 0.55);
   background: rgba(255, 255, 255, 0.95);
+}
+
+.app-shell.theme-light .calendar-weekday {
+  border-right-color: rgba(140, 156, 178, 0.55);
+  border-bottom-color: rgba(140, 156, 178, 0.55);
 }
 
 .calendar-cell.muted {
@@ -536,15 +555,32 @@
 }
 
 .calendar-cell.today {
-  box-shadow: inset 0 0 0 1px rgba(57, 198, 166, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(57, 198, 166, 0.62);
 }
 
 .app-shell.theme-light .calendar-cell.today {
-  box-shadow: inset 0 0 0 1px rgba(140, 156, 178, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(140, 156, 178, 0.68);
 }
 
 .calendar-day-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
   font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.calendar-cell.today .calendar-day-number {
+  background: #39c6a6;
+  color: #06221c;
+}
+
+.app-shell.theme-light .calendar-cell.today .calendar-day-number {
+  background: #0d7f69;
+  color: #ffffff;
 }
 
 .calendar-events {
@@ -681,8 +717,12 @@
   }
 
   .calendar-cell {
-    border: 1px solid rgba(156, 184, 197, 0.2);
+    border: 1px solid rgba(156, 184, 197, 0.38);
     border-radius: 12px;
+  }
+
+  .app-shell.theme-light .calendar-cell {
+    border-color: rgba(140, 156, 178, 0.55);
   }
 }
 
