@@ -115,12 +115,62 @@
 
 .session-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 0.8rem;
   color: var(--ink-soft);
   margin-bottom: 0.7rem;
   flex-wrap: wrap;
+}
+
+.session-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.session-controls-row {
+  margin-top: 0.95rem;
+  background: rgba(13, 32, 48, 0.68);
+  border: 1px solid rgba(156, 184, 197, 0.24);
+  border-radius: 18px;
+  padding: 0.7rem;
+}
+
+.app-shell.theme-light .session-controls-row {
+  background: rgba(247, 249, 253, 0.95);
+}
+
+.session-controls-row .session-controls {
+  justify-content: flex-start;
+}
+
+.session-tab-btn {
+  flex: 0 0 auto;
+  border: 1px solid rgba(156, 184, 197, 0.28);
+  background: rgba(8, 23, 35, 0.85);
+  color: var(--ink-main);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.session-tab-btn.active {
+  background: var(--accent-solid);
+  color: #0c1824;
+}
+
+.session-tab-btn.danger {
+  border-color: rgba(255, 85, 85, 0.45);
+}
+
+.app-shell.theme-light .session-tab-btn {
+  background: rgba(248, 250, 253, 0.98);
 }
 
 .logout-btn {
@@ -1236,6 +1286,14 @@
   background: rgba(247, 249, 253, 0.95);
 }
 
+.embedded-search-panel {
+  margin-top: 1rem;
+}
+
+.embedded-task-panel {
+  margin-top: 1rem;
+}
+
 .hub-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1306,6 +1364,11 @@
 @media (max-width: 900px) {
   .hub-tabs {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .session-actions,
+  .session-controls {
+    justify-content: flex-start;
   }
 }
 

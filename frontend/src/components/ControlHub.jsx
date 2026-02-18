@@ -1,7 +1,6 @@
-﻿import { useState } from "react";
-
 export default function ControlHub({
   t,
+  activeTab,
   notifications,
   profileUsername,
   setProfileUsername,
@@ -13,28 +12,13 @@ export default function ControlHub({
   updatePassword,
   deleteAccount,
 }) {
-  const [activeTab, setActiveTab] = useState("profile");
-
   const overdueCount = notifications.filter((item) => item.level === "overdue").length;
   const soonCount = notifications.filter((item) => item.level === "soon").length;
 
+  if (!activeTab) return null;
+
   return (
     <section className="control-hub">
-      <div className="hub-tabs">
-        <button type="button" className={activeTab === "notifications" ? "active" : ""} onClick={() => setActiveTab("notifications")}>
-          {t.notifications}
-        </button>
-        <button type="button" className={activeTab === "profile" ? "active" : ""} onClick={() => setActiveTab("profile")}>
-          {t.profile}
-        </button>
-        <button type="button" className={activeTab === "password" ? "active" : ""} onClick={() => setActiveTab("password")}>
-          {t.password}
-        </button>
-        <button type="button" className={activeTab === "danger" ? "active" : ""} onClick={() => setActiveTab("danger")}>
-          {t.deleteAccount}
-        </button>
-      </div>
-
       <div className="hub-content">
         {activeTab === "notifications" ? (
           <div className="hub-panel notifications-panel-embedded">

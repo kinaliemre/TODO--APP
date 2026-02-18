@@ -1,6 +1,7 @@
 ﻿import { PRIORITY_OPTIONS, RECUR_OPTIONS } from "../constants/options";
 
 export default function TaskForm({
+  className = "control-panel",
   t,
   title,
   setTitle,
@@ -24,7 +25,7 @@ export default function TaskForm({
   recurringLabel,
 }) {
   return (
-    <section className="control-panel">
+    <section className={className}>
       <form className="create-form advanced" onSubmit={createTask}>
         <div className="field-wrap field-span-2">
           <label>{t.taskName}</label>

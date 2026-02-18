@@ -1,6 +1,7 @@
 ﻿import { PRIORITY_OPTIONS } from "../constants/options";
 
 export default function SearchPanel({
+  className = "search-panel",
   t,
   searchQuery,
   setSearchQuery,
@@ -17,7 +18,7 @@ export default function SearchPanel({
   priorityLabel,
 }) {
   return (
-    <section className="search-panel">
+    <section className={className}>
       <div className="field-wrap search-field-wide">
         <label>{t.searchFieldLabel}</label>
         <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder} />

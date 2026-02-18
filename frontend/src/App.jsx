@@ -57,6 +57,7 @@ export default function App() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [selectedFiles, setSelectedFiles] = useState({});
+  const [activeControlTab, setActiveControlTab] = useState(null);
 
   const t = TRANSLATIONS[lang];
   const priorityLabel = { low: t.priorityLow, medium: t.priorityMedium, high: t.priorityHigh };
@@ -241,6 +242,10 @@ export default function App() {
     }
   };
 
+  const toggleControlTab = (tab) => {
+    setActiveControlTab((prev) => (prev === tab ? null : tab));
+  };
+
   const createTask = async (event) => {
     event.preventDefault();
     try {
@@ -393,62 +398,118 @@ export default function App() {
           <p className="subtitle">{t.subtitle}</p>
         </header>
 
-        <ControlHub
-          t={t}
-          notifications={notifications}
-          profileUsername={profileUsername}
-          setProfileUsername={setProfileUsername}
-          updateUsername={updateUsername}
-          currentPassword={currentPassword}
-          setCurrentPassword={setCurrentPassword}
-          newPassword={newPassword}
-          setNewPassword={setNewPassword}
-          updatePassword={updatePassword}
-          deleteAccount={deleteAccount}
-        />
-
         <StatsGrid stats={stats} t={t} />
 
-        <SearchPanel
-          t={t}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          searchTag={searchTag}
-          setSearchTag={setSearchTag}
-          searchPriority={searchPriority}
-          setSearchPriority={setSearchPriority}
-          dueFrom={dueFrom}
-          setDueFrom={setDueFrom}
-          dueTo={dueTo}
-          setDueTo={setDueTo}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          priorityLabel={priorityLabel}
-        />
+        <div className="session-controls-row">
+          <div className="session-controls">
+            <button
+              type="button"
+              className={activeControlTab === "notifications" ? "session-tab-btn active" : "session-tab-btn"}
+              onClick={() => toggleControlTab("notifications")}
+            >
+              {t.notifications}
+            </button>
+            <button
+              type="button"
+              className={activeControlTab === "profile" ? "session-tab-btn active" : "session-tab-btn"}
+              onClick={() => toggleControlTab("profile")}
+            >
+              {t.profile}
+            </button>
+            <button
+              type="button"
+              className={activeControlTab === "password" ? "session-tab-btn active" : "session-tab-btn"}
+              onClick={() => toggleControlTab("password")}
+            >
+              {t.password}
+            </button>
+            <button
+              type="button"
+              className={activeControlTab === "danger" ? "session-tab-btn active danger" : "session-tab-btn danger"}
+              onClick={() => toggleControlTab("danger")}
+            >
+              {t.deleteAccount}
+            </button>
+            <button
+              type="button"
+              className={activeControlTab === "search" ? "session-tab-btn active" : "session-tab-btn"}
+              onClick={() => toggleControlTab("search")}
+            >
+              {t.searchFieldLabel}
+            </button>
+            <button
+              type="button"
+              className={activeControlTab === "task" ? "session-tab-btn active" : "session-tab-btn"}
+              onClick={() => toggleControlTab("task")}
+            >
+              {t.addTask}
+            </button>
+          </div>
+        </div>
 
-        <TaskForm
-          t={t}
-          title={title}
-          setTitle={setTitle}
-          startDate={startDate}
-          setStartDate={setStartDate}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          priority={priority}
-          setPriority={setPriority}
-          recurring={recurring}
-          setRecurring={setRecurring}
-          tagsInput={tagsInput}
-          setTagsInput={setTagsInput}
-          notes={notes}
-          setNotes={setNotes}
-          createTask={createTask}
-          busyId={busyId}
-          filter={filter}
-          setFilter={setFilter}
-          priorityLabel={priorityLabel}
-          recurringLabel={recurringLabel}
-        />
+        {["notifications", "profile", "password", "danger"].includes(activeControlTab) ? (
+          <ControlHub
+            t={t}
+            activeTab={activeControlTab}
+            notifications={notifications}
+            profileUsername={profileUsername}
+            setProfileUsername={setProfileUsername}
+            updateUsername={updateUsername}
+            currentPassword={currentPassword}
+            setCurrentPassword={setCurrentPassword}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            updatePassword={updatePassword}
+            deleteAccount={deleteAccount}
+          />
+        ) : null}
+
+        {activeControlTab === "search" ? (
+          <SearchPanel
+            className="control-hub search-panel embedded-search-panel"
+            t={t}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchTag={searchTag}
+            setSearchTag={setSearchTag}
+            searchPriority={searchPriority}
+            setSearchPriority={setSearchPriority}
+            dueFrom={dueFrom}
+            setDueFrom={setDueFrom}
+            dueTo={dueTo}
+            setDueTo={setDueTo}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            priorityLabel={priorityLabel}
+          />
+        ) : null}
+
+        {activeControlTab === "task" ? (
+          <TaskForm
+            className="control-panel control-hub embedded-task-panel"
+            t={t}
+            title={title}
+            setTitle={setTitle}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            priority={priority}
+            setPriority={setPriority}
+            recurring={recurring}
+            setRecurring={setRecurring}
+            tagsInput={tagsInput}
+            setTagsInput={setTagsInput}
+            notes={notes}
+            setNotes={setNotes}
+            createTask={createTask}
+            busyId={busyId}
+            filter={filter}
+            setFilter={setFilter}
+            priorityLabel={priorityLabel}
+            recurringLabel={recurringLabel}
+          />
+        ) : null}
 
         {error ? (
           <p className="error-banner">
