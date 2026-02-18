@@ -16,7 +16,6 @@
 }) {
   return (
     <section className="task-list">
-      {loading ? <p className="empty-state">{t.loading}</p> : null}
       {!loading && tasks.length === 0 ? <p className="empty-state">{t.noTasks}</p> : null}
 
       {tasks.map((task) => (
