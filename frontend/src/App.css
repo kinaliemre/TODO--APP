@@ -1630,6 +1630,64 @@
     grid-template-columns: 1fr;
   }
 }
+
+.forgot-link-btn {
+  border: 1px solid rgba(156, 184, 197, 0.28);
+  background: rgba(8, 23, 35, 0.74);
+  color: var(--ink-main);
+  border-radius: 11px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.72rem 1rem;
+}
+
+.forgot-panel {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.15rem 0;
+}
+
+.forgot-panel p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.forgot-panel input {
+  border: 1px solid rgba(156, 184, 197, 0.4);
+  background: rgba(5, 15, 24, 0.62);
+  color: var(--ink-main);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+}
+
+.forgot-panel button {
+  border: 0;
+  border-radius: 11px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  background: linear-gradient(120deg, var(--accent-a), var(--accent-b));
+  color: #1b1103;
+  padding: 0.8rem 1.1rem;
+}
+
+.app-shell.theme-light .forgot-link-btn {
+  background: rgba(248, 250, 253, 0.98);
+  color: #1c2330;
+}
+
+.app-shell.theme-light .forgot-panel input {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.app-shell.theme-light .forgot-panel button {
+  color: #1c2330;
+}
 /* Wider board + less squeezed task date fields */
 .board {
   width: min(1280px, 100%);
