@@ -1,4 +1,6 @@
-﻿export default function TaskList({
+import { useState } from "react";
+
+export default function TaskList({
   t,
   tasks,
   loading,
@@ -14,16 +16,33 @@
   downloadAttachment,
   removeAttachment,
 }) {
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
+
   return (
     <section className="task-list">
       {!loading && tasks.length === 0 ? <p className="empty-state">{t.noTasks}</p> : null}
 
       {tasks.map((task) => (
-        <article key={task.id} className={`task-card ${task.done ? "done" : ""}`}>
+        <article
+          key={task.id}
+          className={`task-card ${task.done ? "done" : ""} ${expandedTaskId === task.id ? "expanded" : "collapsed"}`}
+          onClick={() => setExpandedTaskId((prev) => (prev === task.id ? null : task.id))}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              setExpandedTaskId((prev) => (prev === task.id ? null : task.id));
+            }
+          }}
+        >
           <button
-            className="task-check"
+            className="task-check status-badge"
             type="button"
-            onClick={() => updateTaskState(task.id, { done: !task.done })}
+            onClick={(event) => {
+              event.stopPropagation();
+              updateTaskState(task.id, { done: !task.done });
+            }}
             disabled={busyId === task.id}
           >
             {task.done ? t.statusDone : t.open}
@@ -45,47 +64,65 @@
               ))}
             </div>
 
-            {task.notes ? <p className="task-notes">{task.notes}</p> : null}
+            {expandedTaskId === task.id ? (
+              <>
+                {task.notes ? <p className="task-notes">{task.notes}</p> : null}
 
-            <div className="attachments">
-              <strong>{t.attachments}</strong>
-              <div className="file-row">
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setSelectedFiles((prev) => ({
-                      ...prev,
-                      [task.id]: e.target.files?.[0] || null,
-                    }))
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => uploadAttachment(task.id)}
-                  disabled={uploadingTaskId === task.id || !selectedFiles[task.id]}
-                >
-                  {t.upload}
-                </button>
-              </div>
-
-              {task.attachments.length === 0 ? <small>{t.noFiles}</small> : null}
-              {task.attachments.map((attachment) => (
-                <div key={attachment.id} className="attachment-item">
-                  <span>{attachment.file_name}</span>
-                  <div>
-                    <button type="button" onClick={() => downloadAttachment(attachment)}>
-                      {t.downloading}
-                    </button>
-                    <button type="button" onClick={() => removeAttachment(attachment.id)}>
-                      {t.removeFile}
+                <div className="attachments" onClick={(event) => event.stopPropagation()}>
+                  <strong>{t.attachments}</strong>
+                  <div className="file-row">
+                    <input
+                      id={`task-file-${task.id}`}
+                      className="file-input-hidden"
+                      type="file"
+                      onChange={(e) =>
+                        setSelectedFiles((prev) => ({
+                          ...prev,
+                          [task.id]: e.target.files?.[0] || null,
+                        }))
+                      }
+                    />
+                    <label htmlFor={`task-file-${task.id}`} className="file-picker-btn">
+                      {t.selectFile}
+                    </label>
+                    <span className="selected-file-name">{selectedFiles[task.id]?.name || t.noFileSelected}</span>
+                    <button
+                      type="button"
+                      onClick={() => uploadAttachment(task.id)}
+                      disabled={uploadingTaskId === task.id || !selectedFiles[task.id]}
+                    >
+                      {t.upload}
                     </button>
                   </div>
+
+                  {task.attachments.length === 0 ? <small>{t.noFiles}</small> : null}
+                  {task.attachments.map((attachment) => (
+                    <div key={attachment.id} className="attachment-item">
+                      <span>{attachment.file_name}</span>
+                      <div>
+                        <button type="button" onClick={() => downloadAttachment(attachment)}>
+                          {t.downloading}
+                        </button>
+                        <button type="button" onClick={() => removeAttachment(attachment.id)}>
+                          {t.removeFile}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : null}
           </div>
 
-          <button className="task-delete" type="button" onClick={() => deleteTask(task.id)} disabled={busyId === task.id}>
+          <button
+            className="task-delete"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              deleteTask(task.id);
+            }}
+            disabled={busyId === task.id}
+          >
             {t.delete}
           </button>
         </article>
@@ -93,4 +130,3 @@
     </section>
   );
 }
-
