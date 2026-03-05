@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from ..deps import get_current_user
 from ..models import User
-from ..schemas import TokenOut, UserLogin, UserOut, UserRegister
+from ..schemas import ForgotPasswordReset, MessageOut, TokenOut, UserLogin, UserOut, UserRegister
 from ..security import create_access_token, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -49,6 +49,21 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 
     token = create_access_token(user.username)
     return TokenOut(access_token=token, username=user.username)
+
+
+@router.post("/password/forgot", response_model=MessageOut)
+def forgot_password(payload: ForgotPasswordReset, db: Session = Depends(get_db)):
+    normalized_username = payload.username.strip().lower()
+    user = db.scalar(select(User).where(func.lower(User.username) == normalized_username))
+    if user is None:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+
+    if payload.new_password != payload.new_password_repeat:
+        raise HTTPException(status_code=400, detail="Yeni şifre tekrar alanı eşleşmiyor")
+
+    user.password_hash = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Şifre güncellendi"}
 
 
 @router.get("/me", response_model=UserOut)

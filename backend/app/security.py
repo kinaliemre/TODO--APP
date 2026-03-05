@@ -41,3 +41,17 @@ def create_access_token(subject: str) -> str:
     payload = {"sub": subject, "exp": expire}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
+
+def has_min_common_substring(first: str, second: str, min_length: int = 5) -> bool:
+    if min_length <= 0:
+        return True
+    if len(first) < min_length or len(second) < min_length:
+        return False
+
+    shorter, longer = (first, second) if len(first) <= len(second) else (second, first)
+    for index in range(len(shorter) - min_length + 1):
+        chunk = shorter[index : index + min_length]
+        if chunk in longer:
+            return True
+    return False
+

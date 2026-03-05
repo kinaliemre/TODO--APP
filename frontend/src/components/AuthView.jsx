@@ -14,6 +14,17 @@ export default function AuthView({
   setAuthPassword,
   authBusy,
   submitAuth,
+  forgotOpen,
+  setForgotOpen,
+  forgotUsername,
+  setForgotUsername,
+  forgotNewPassword,
+  setForgotNewPassword,
+  forgotNewPasswordRepeat,
+  setForgotNewPasswordRepeat,
+  forgotBusy,
+  submitForgotPassword,
+  authSuccess,
   authError,
 }) {
   return (
@@ -53,7 +64,34 @@ export default function AuthView({
             <button type="submit" disabled={authBusy}>
               {authBusy ? t.authLoading : authMode === "login" ? t.submitLogin : t.submitRegister}
             </button>
+            {authMode === "login" ? (
+              <button type="button" className="forgot-link-btn" onClick={() => setForgotOpen((prev) => !prev)}>
+                {t.forgotPassword}
+              </button>
+            ) : null}
           </form>
+          {authMode === "login" && forgotOpen ? (
+            <div className="forgot-panel">
+              <p>{t.forgotPasswordDesc}</p>
+              <input type="text" value={forgotUsername} onChange={(e) => setForgotUsername(e.target.value)} placeholder={t.username} />
+              <input
+                type="password"
+                value={forgotNewPassword}
+                onChange={(e) => setForgotNewPassword(e.target.value)}
+                placeholder={t.newPassword}
+              />
+              <input
+                type="password"
+                value={forgotNewPasswordRepeat}
+                onChange={(e) => setForgotNewPasswordRepeat(e.target.value)}
+                placeholder={t.newPasswordRepeat}
+              />
+              <button type="button" onClick={submitForgotPassword} disabled={forgotBusy}>
+                {forgotBusy ? t.authLoading : t.resetPassword}
+              </button>
+            </div>
+          ) : null}
+          {authSuccess ? <p className="success-banner">{authSuccess}</p> : null}
 
           {authError ? (
             <p className="error-banner">

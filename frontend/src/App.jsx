@@ -51,6 +51,12 @@ export default function App() {
   const [authUsername, setAuthUsername] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [forgotBusy, setForgotBusy] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState("");
+  const [forgotNewPassword, setForgotNewPassword] = useState("");
+  const [forgotNewPasswordRepeat, setForgotNewPasswordRepeat] = useState("");
+  const [authSuccess, setAuthSuccess] = useState("");
   const [authError, setAuthError] = useState("");
 
   const [profileUsername, setProfileUsername] = useState("");
@@ -254,12 +260,14 @@ export default function App() {
     event.preventDefault();
     if (!authUsername.trim() || !authPassword) {
       setAuthError(t.authRequired);
+      setAuthSuccess("");
       return;
     }
 
     try {
       setAuthBusy(true);
       setAuthError("");
+      setAuthSuccess("");
       const endpoint = authMode === "login" ? "/auth/login" : "/auth/register";
       const data = await request(
         endpoint,
@@ -273,10 +281,47 @@ export default function App() {
       setToken(data.access_token);
       setUsername(data.username);
       setAuthPassword("");
+      setForgotOpen(false);
     } catch (err) {
       setAuthError(toErrorMessage(err, t.error));
+      setAuthSuccess("");
     } finally {
       setAuthBusy(false);
+    }
+  };
+
+  const submitForgotPassword = async () => {
+    if (!forgotUsername.trim() || !forgotNewPassword || !forgotNewPasswordRepeat) {
+      setAuthError(t.forgotRequired);
+      setAuthSuccess("");
+      return;
+    }
+
+    try {
+      setForgotBusy(true);
+      setAuthError("");
+      const data = await request(
+        "/auth/password/forgot",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: forgotUsername.trim(),
+            new_password: forgotNewPassword,
+            new_password_repeat: forgotNewPasswordRepeat,
+          }),
+        },
+        false,
+      );
+      setAuthSuccess(data.message || t.passwordResetOk);
+      setForgotNewPassword("");
+      setForgotNewPasswordRepeat("");
+      setForgotOpen(false);
+    } catch (err) {
+      setAuthError(toErrorMessage(err, t.error));
+      setAuthSuccess("");
+    } finally {
+      setForgotBusy(false);
     }
   };
 
@@ -456,6 +501,17 @@ export default function App() {
         setAuthPassword={setAuthPassword}
         authBusy={authBusy}
         submitAuth={submitAuth}
+        forgotOpen={forgotOpen}
+        setForgotOpen={setForgotOpen}
+        forgotUsername={forgotUsername}
+        setForgotUsername={setForgotUsername}
+        forgotNewPassword={forgotNewPassword}
+        setForgotNewPassword={setForgotNewPassword}
+        forgotNewPasswordRepeat={forgotNewPasswordRepeat}
+        setForgotNewPasswordRepeat={setForgotNewPasswordRepeat}
+        forgotBusy={forgotBusy}
+        submitForgotPassword={submitForgotPassword}
+        authSuccess={authSuccess}
         authError={authError}
       />
     );
