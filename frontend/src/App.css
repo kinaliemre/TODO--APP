@@ -676,6 +676,24 @@
   animation: pop 0.32s ease;
 }
 
+.task-card.collapsed {
+  min-height: 74px;
+  padding: 0.62rem 0.85rem;
+}
+
+.task-card.expanded {
+  min-height: 132px;
+  padding: 0.9rem;
+}
+
+.task-card[role="button"] {
+  cursor: pointer;
+}
+
+.task-card .attachments {
+  margin-top: 0.6rem;
+}
+
 .app-shell.theme-light .task-card {
   background: rgba(250, 251, 254, 0.96);
 }
@@ -700,6 +718,15 @@
   padding: 0.5rem 0.65rem;
   background: var(--ok-bg);
   color: var(--ok-fg);
+}
+
+.status-badge {
+  min-width: 104px;
+  height: 38px;
+  border-radius: 9px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .task-card.done .task-check {
@@ -1130,6 +1157,48 @@
   display: flex;
   gap: 0.4rem;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.file-picker-btn {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.95rem;
+  border-radius: 11px;
+  border: 1px solid rgba(156, 184, 197, 0.38);
+  background: rgba(5, 15, 24, 0.62);
+  color: var(--ink-main);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.selected-file-name {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  border-radius: 11px;
+  border: 1px solid rgba(156, 184, 197, 0.26);
+  background: rgba(8, 23, 35, 0.52);
+  color: var(--ink-soft);
+  font-size: 0.94rem;
+}
+
+.app-shell.theme-light .file-picker-btn {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1c2330;
+}
+
+.app-shell.theme-light .selected-file-name {
+  background: rgba(248, 250, 253, 0.98);
+  color: #667085;
 }
 
 .attachment-item {
