@@ -550,6 +550,7 @@ export default function App() {
                   : undefined
               }
             >
+              <img className="brand-logo" src="/TO-DO.png" alt="TO-DO logo" />
               <h1>{t.title}</h1>
               <p className="subtitle">{t.subtitle}</p>
             </div>
