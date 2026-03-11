@@ -292,6 +292,14 @@
   letter-spacing: -0.04em;
 }
 
+.brand-logo {
+  width: clamp(58px, 8vw, 96px);
+  height: auto;
+  display: block;
+  margin-bottom: 0.45rem;
+  object-fit: contain;
+}
+
 .kicker {
   text-transform: uppercase;
   letter-spacing: 0.2em;

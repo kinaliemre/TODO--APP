@@ -35,6 +35,7 @@ export default function AuthView({
         <HeaderTools theme={theme} setTheme={setTheme} lang={lang} setLang={setLang} t={t} />
 
         <header className="board-header">
+          <img className="brand-logo" src="/TO-DO.png" alt="TO-DO logo" />
           <h1>{t.title}</h1>
           <p className="subtitle">{t.authSubtitle}</p>
         </header>
