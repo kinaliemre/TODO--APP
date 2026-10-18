@@ -18,3 +18,6 @@ backend/pgdata/
 backend/postgres.log
 backend/*.pid
 
+
+# Local SQLite database (holds user accounts)
+*.db
